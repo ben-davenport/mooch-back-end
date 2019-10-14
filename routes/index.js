@@ -36,8 +36,27 @@ router.get('/cities',(req, res, next)=>{
 
 router.get('/tools',(req, res, next)=>{
   const searchString = req.query.q;
-  // const toolsQuery = `SELECT * WHERE title LIKE ? OR details LIKE ? OR category LIKE ?;`
-  const toolsQuery = `SELECT * FROM tools WHERE title LIKE ? OR details LIKE ? OR category LIKE ?;`
+  console.log(req.query)
+  const toolsQuery = `SELECT * FROM tools JOIN users ON tools.uid = users.id WHERE title LIKE ? OR details LIKE ? OR category LIKE ?;`
+  db.query(toolsQuery,[`%${searchString}%`,`%${searchString}%`, `%${searchString}%`], (err, results)=>{
+    if(err) throw err;
+    if(results.length > 0){
+      res.json({
+        msg: "resultsFound",
+        results});
+      }
+    else{
+      res.json({
+        msg: "noResults",
+      })
+    }
+
+  })
+})
+
+router.get('/account',(req, res, next)=>{
+  const searchString = req.query.q;
+  const toolsQuery = `SELECT * FROM tools JOIN users ON tools.uid = users.id WHERE title LIKE ? OR details LIKE ? OR category LIKE ?;`
   db.query(toolsQuery,[`%${searchString}%`,`%${searchString}%`, `%${searchString}%`], (err, results)=>{
     if(err) throw err;
     res.json(results);

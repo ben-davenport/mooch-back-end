@@ -79,6 +79,8 @@ router.post('/login',(req, res)=>{
           first: thisRow.first,
           last: thisRow.last,
           email: thisRow.email,
+          about: thisRow.about,
+          location: `${thisRow.street} ${thisRow.city}, ${thisRow.state}`,
           token,
         });
       }else{
