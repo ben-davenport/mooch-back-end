@@ -7,7 +7,7 @@
 var app = require('../app');
 var debug = require('debug')('airbnb-back-end:server');
 var http = require('http');
-const WS = require('ws')
+// const WS = require('ws')
 const db = require('../db')
 
 /**
@@ -24,32 +24,32 @@ app.set('port', port);
 var server = http.createServer(app);
 
 /** let's make some websockets */
-const wss = new WS.Server({
-  path: "/ws",
-  clientTracking: true,
-  server: server,
-});
+// const wss = new WS.Server({
+//   path: "/ws",
+//   clientTracking: true,
+//   server: server,
+// });
 
-wss.on("connection", (ws)=>{
-  console.log('WS Connected');
-  ws.on("message", (msg)=>{
-    console.log(msg)
-    const msg_json = JSON.parse(msg);
-    console.log(msg_json);
-    wss.clients.forEach((client)=>{
-      client.send(JSON.stringify(msg_json))
-    })
-    const {message, sender, recipient,} = msg
-    const time = Date.now();
-    const insertMsgQuery = `INSERT INTO messages
-    (sender, recipient, timestamp, message)
-        VALUES
-        (?,?,?,?)`
-    db.query(insertMsgQuery,[sender,recipient,time,message],(err)=>{
-          if(err){throw err}
-    })
-  });
-});
+// wss.on("connection", (ws)=>{
+//   console.log('WS Connected');
+//   ws.on("message", (msg)=>{
+//     console.log(msg)
+//     const msg_json = JSON.parse(msg);
+//     console.log(msg_json);
+//     wss.clients.forEach((client)=>{
+//       client.send(JSON.stringify(msg_json))
+//     })
+//     const {message, sender, recipient,} = msg
+//     const time = Date.now();
+//     const insertMsgQuery = `INSERT INTO messages
+//     (sender, recipient, timestamp, message)
+//         VALUES
+//         (?,?,?,?)`
+//     db.query(insertMsgQuery,[sender,recipient,time,message],(err)=>{
+//           if(err){throw err}
+//     })
+//   });
+// });
 
 /**
  * Listen on provided port, on all network interfaces.
