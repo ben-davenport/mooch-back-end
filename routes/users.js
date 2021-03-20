@@ -4,44 +4,41 @@ const db = require('../db');
 const bcrypt = require('bcryptjs');
 const randToken = require('rand-token');
 
-/* GET users listing. */
+/* GET users . */
 router.get('/', function(req, res, next) {
   res.send('respond with a resource');
 });
 
+// data validation for sign up
 router.post('/signup',(req, res, next)=>{
-  // someone wants to signup!! im so excited!!
-  // First of all... Check to see if data is valid
   const { first,last,email,password,city,state,street,about } = req.body;
   if((!first) || (!last) || (!email) || (!password) || (!city) || (!state) || (!street)){
-    // STOP. Goodbye.
     res.json({
       msg: "invalidData"
     });
     return;
   }
-  // if we get this far, the data is valid. See if the user is in the db
+  /* data is valid, check if user exists
+    if the email is new add the user to the db */
   const checkUserQuery = `SELECT * FROM users WHERE email = ?`
   db.query(checkUserQuery,[email],(err,results)=>{
     if(err){throw err}; //FULL STOP!!!!!
     if(results.length > 0){
-      // this email has been used. Goodbye.
       res.json({
         msg: "userExists"
       });
     }else{
-      // this email has not been used. lets add it
       const insertUserQuery = `INSERT INTO users
         (first, last, email, password, city, state, street, about, token)
         VALUES
         (?,?,?,?,?,?,?,?,?)`
-        // turn the password into something evil for db storage
+        // salt and hash the password for security
         const salt = bcrypt.genSaltSync(10);
         const hash = bcrypt.hashSync(password, salt);
-        const token = randToken.uid(50); // this is the users valet ticket
+        // create a token
+        const token = randToken.uid(50);
         db.query(insertUserQuery,[first,last,email,hash, city, state, street, about, token],(err2)=>{
           if(err2){throw err2}
-          // Hooray!
           res.json({
             msg: "userAdded",
             token,
@@ -53,21 +50,20 @@ router.post('/signup',(req, res, next)=>{
   })
 })
 
+/* check login credentials
+  if login exists and password is valid then
+  return a valid token and basic user info */
 router.post('/login',(req, res)=>{
   const { email, password } = req.body;
-  // First: Check db for this email
+  
   const getUserQuery = `SELECT * FROM users WHERE email = ?`;
   db.query(getUserQuery,[email],(err, results)=>{
     if(err){throw err}
-    // check to see if there is a result
     if(results.length > 0){
-      // found them!!!!
       const thisRow = results[0];
-      // find out if the pass is correct
       const isValidPass = bcrypt.compareSync(password,thisRow.password);
       if(isValidPass){
-        // these are the droids we're looking for
-        const token = randToken.uid(50); // this is the users valet ticket
+        const token = randToken.uid(50);
         const updateUserTokenQuery = `UPDATE users
           SET token = ? WHERE email = ?`
         db.query(updateUserTokenQuery,[token,email],(err)=>{
@@ -84,14 +80,14 @@ router.post('/login',(req, res)=>{
           token,
         });
       }else{
-        // liar liar, pants on fire
+        // incorrect password response
         res.json({
           msg: "badPass"
         })
       }
 
     }else{
-      // no match
+      // no such user found
       res.json({
         msg: "noEmail"
       })
